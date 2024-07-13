@@ -1,0 +1,1 @@
+clang -Wall ./src/main.c ./src/vm.c ./src/bytecode.c -o dist/microvm
