@@ -1,0 +1,4 @@
+load 42
+jmp 3
+load 5
+push

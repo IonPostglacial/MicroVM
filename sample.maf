@@ -1,0 +1,21 @@
+load 42
+push
+pop
+inc
+dec
+add
+sub
+mul
+div
+eq
+neq
+lt
+lte
+gt
+gte
+jmp 42
+not
+jz 42
+jnz 42
+call 42
+ret
