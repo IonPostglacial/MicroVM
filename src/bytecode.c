@@ -26,6 +26,14 @@ void MVM_Code_ReadLine(struct MVM_Code *code, char *src)
             code->instructions[code->count].op = MVM_OP_PUSH;
         } else if (strcmp(tok, "pop") == 0) {
             code->instructions[code->count].op = MVM_OP_POP;
+        } else if (strcmp(tok, "dup") == 0) {
+            code->instructions[code->count].op = MVM_OP_DUP;
+        } else if (strcmp(tok, "swap") == 0) {
+            code->instructions[code->count].op = MVM_OP_SWAP;
+        } else if (strcmp(tok, "ldt") == 0) {
+            code->instructions[code->count].op = MVM_OP_LOAD_TOP;
+        } else if (strcmp(tok, "over") == 0) {
+            code->instructions[code->count].op = MVM_OP_OVER;
         } else if (strcmp(tok, "inc") == 0) {
             code->instructions[code->count].op = MVM_OP_INC;
         } else if (strcmp(tok, "dec") == 0) {

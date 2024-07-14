@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -6,6 +8,10 @@ enum MVM_Opcode
     MVM_OP_LOAD_IMMEDIATE,
     MVM_OP_PUSH,
     MVM_OP_POP,
+    MVM_OP_DUP,
+    MVM_OP_SWAP,
+    MVM_OP_LOAD_TOP,
+    MVM_OP_OVER,
     MVM_OP_INC,
     MVM_OP_DEC,
     MVM_OP_ADD,

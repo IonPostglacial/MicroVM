@@ -1,5 +1,8 @@
+#pragma once
+
 #include <stdint.h>
 #include "bytecode.h"
+#include "errors.h"
 
 #define MVM_STACK_SIZE 16000
 #define MVM_CALLSTACK_SIZE 100
@@ -15,4 +18,4 @@ struct MVM_Machine
 };
 
 void MVM_Machine_Init(struct MVM_Machine *machine);
-void MVM_Machine_RunCode(struct MVM_Machine *machine, struct MVM_Code code);
+void MVM_Machine_RunCode(struct MVM_Machine *machine, struct MVM_Code code, struct MVM_Error **err);

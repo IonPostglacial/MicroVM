@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <memory.h>
 #include "vm.h"
+#include "errors.h"
 
 int main(int argc, const char **argv)
 {
     struct MVM_Machine vm;
     struct MVM_Code code;
+    struct MVM_Error *err;
     code.count = 0;
     code.capacity = 512;
     code.instructions = calloc(code.capacity, sizeof(struct MVM_Instruction));
@@ -25,7 +27,7 @@ int main(int argc, const char **argv)
         printf("instruction: %hu\n", code.instructions[i].op);
     }
     MVM_Machine_Init(&vm);
-    MVM_Machine_RunCode(&vm, code);
+    MVM_Machine_RunCode(&vm, code, &err);
     printf("acc: %d\n", vm.acc);
     printf("sp: %zu\n", vm.sp);
     for (int i = 0; i < vm.sp; i++) {

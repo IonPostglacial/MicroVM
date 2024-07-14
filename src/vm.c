@@ -1,4 +1,5 @@
 #include "vm.h"
+#include "errors.h"
 #include <memory.h>
 #include <stdlib.h>
 
@@ -11,28 +12,59 @@ void MVM_Machine_Init(struct MVM_Machine *machine)
     memset(machine->stack, 0, sizeof machine->stack);
 }
 
-int32_t MVM_Machine_Stack_Pop(struct MVM_Machine *machine)
+int32_t MVM_Machine_Stack_Pop(struct MVM_Machine *machine, struct MVM_Error **err)
 {
     if (machine->sp < 0) {
-        exit(1);
+        *err = MVM_Error_Data_Stack_Underflow();
     }
     return machine->stack[--machine->sp];
 }
 
-void MVM_Machine_ExecuteInstruction(struct MVM_Machine *machine, struct MVM_Instruction instruction)
+void MVM_Machine_Stack_Push(struct MVM_Machine *machine, int32_t value, struct MVM_Error **err)
+{
+    if (machine->sp >= MVM_STACK_SIZE) {
+        *err = MVM_Error_Data_Stack_Overflow();
+    }
+    machine->stack[machine->sp++] = value;
+}
+
+void MVM_Machine_ExecuteInstruction(struct MVM_Machine *machine, struct MVM_Instruction instruction, struct MVM_Error **err)
 {
     switch (instruction.op) {
     case MVM_OP_LOAD_IMMEDIATE:
         machine->acc = instruction.as.immediate;
         break;
     case MVM_OP_PUSH:
-        if (machine->sp >= MVM_STACK_SIZE) {
-            exit(1);
-        }
-        machine->stack[machine->sp++] = machine->acc;
+        MVM_Machine_Stack_Push(machine, machine->acc, err);
         break;
     case MVM_OP_POP:
-        machine->acc = MVM_Machine_Stack_Pop(machine);
+        machine->acc = MVM_Machine_Stack_Pop(machine, err);
+        break;
+    case MVM_OP_DUP:
+        if (machine->sp < 0) {
+            exit(1);
+        }
+        MVM_Machine_Stack_Push(machine, machine->stack[machine->sp], err);
+        break;
+    case MVM_OP_SWAP:
+        if (machine->sp < 1) {
+            exit(1);
+        }
+        int32_t tmp = machine->stack[machine->sp];
+        machine->stack[machine->sp] = machine->stack[machine->sp - 1];
+        machine->stack[machine->sp - 1] = tmp;
+        break;
+    case MVM_OP_LOAD_TOP:
+        if (machine->sp < 0) {
+            exit(1);
+        }
+        machine->acc = machine->stack[machine->sp];
+        break;
+    case MVM_OP_OVER:
+        if (machine->sp < 1) {
+            exit(1);
+        }
+        machine->acc = machine->stack[machine->sp - 1];
         break;
     case MVM_OP_INC:
         machine->acc++;
@@ -41,34 +73,34 @@ void MVM_Machine_ExecuteInstruction(struct MVM_Machine *machine, struct MVM_Inst
         machine->acc--;
         break;
     case MVM_OP_ADD:
-        machine->acc += MVM_Machine_Stack_Pop(machine);
+        machine->acc += MVM_Machine_Stack_Pop(machine, err);
         break;
     case MVM_OP_SUB:
-        machine->acc -= MVM_Machine_Stack_Pop(machine);
+        machine->acc -= MVM_Machine_Stack_Pop(machine, err);
         break;
     case MVM_OP_MUL:
-        machine->acc *= MVM_Machine_Stack_Pop(machine);
+        machine->acc *= MVM_Machine_Stack_Pop(machine, err);
         break;
     case MVM_OP_DIV:
-        machine->acc /= MVM_Machine_Stack_Pop(machine);
+        machine->acc /= MVM_Machine_Stack_Pop(machine, err);
         break;
     case MVM_OP_EQ:
-        machine->acc = machine->acc == MVM_Machine_Stack_Pop(machine);
+        machine->acc = machine->acc == MVM_Machine_Stack_Pop(machine, err);
         break;
     case MVM_OP_NEQ:
-        machine->acc = machine->acc != MVM_Machine_Stack_Pop(machine);
+        machine->acc = machine->acc != MVM_Machine_Stack_Pop(machine, err);
         break;
     case MVM_OP_LT:
-        machine->acc = machine->acc < MVM_Machine_Stack_Pop(machine);
+        machine->acc = machine->acc < MVM_Machine_Stack_Pop(machine, err);
         break;
     case MVM_OP_LTE:
-        machine->acc = machine->acc <= MVM_Machine_Stack_Pop(machine);
+        machine->acc = machine->acc <= MVM_Machine_Stack_Pop(machine, err);
         break;
     case MVM_OP_GT:
-        machine->acc = machine->acc > MVM_Machine_Stack_Pop(machine);
+        machine->acc = machine->acc > MVM_Machine_Stack_Pop(machine, err);
         break;
     case MVM_OP_GTE:
-        machine->acc = machine->acc >= MVM_Machine_Stack_Pop(machine);
+        machine->acc = machine->acc >= MVM_Machine_Stack_Pop(machine, err);
         break;
     case MVM_OP_JMP:
         machine->pc = instruction.as.address;
@@ -103,9 +135,9 @@ void MVM_Machine_ExecuteInstruction(struct MVM_Machine *machine, struct MVM_Inst
     machine->pc++;
 }
 
-void MVM_Machine_RunCode(struct MVM_Machine *machine, struct MVM_Code code)
+void MVM_Machine_RunCode(struct MVM_Machine *machine, struct MVM_Code code, struct MVM_Error **err)
 {
     while (machine->pc < code.count) {
-        MVM_Machine_ExecuteInstruction(machine, code.instructions[machine->pc]);
+        MVM_Machine_ExecuteInstruction(machine, code.instructions[machine->pc], err);
     }
 }
